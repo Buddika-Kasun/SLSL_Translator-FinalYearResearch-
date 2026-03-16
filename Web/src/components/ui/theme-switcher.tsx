@@ -86,7 +86,7 @@ export function ThemeSwitcher() {
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full w-9 h-9 relative flex-shrink-0 text-muted-foreground hover:text-primary cursor-pointer"
+          className="rounded-full w-9 h-9 relative flex-shrink-0 text-muted-foreground hover:text-primary cursor-pointer bg-primary/10"
           aria-label="Toggle theme"
         >
           <AnimatePresence mode="wait" initial={false}>

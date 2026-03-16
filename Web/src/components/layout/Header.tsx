@@ -1,29 +1,35 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Menu,
   X,
-  Briefcase,
-  BookOpen,
-  Plane,
+  Info,
+  Target,
+  Layers,
+  Cpu,
+  BarChart,
   Users,
-  Globe,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { cn } from "@/lib/utils";
-import BrandText from "../ui/brandText";
+import { AnimatedHandIcon } from "../ui/AnimatedHandIcon";
 
 const navigation = [
-  { name: "Jobs", href: "/jobs", icon: Briefcase },
-  { name: "Courses", href: "/courses", icon: BookOpen },
-  { name: "Visa", href: "/visa", icon: Plane },
-  { name: "Gateway", href: "/gateway", icon: Globe },
-  { name: "Stories", href: "/stories", icon: Users },
+  { name: "About", href: "/#about", icon: Info, id: "about" },
+  { name: "Objective", href: "/#objectives", icon: Target, id: "objectives" },
+  {
+    name: "Architecture",
+    href: "/#architecture",
+    icon: Layers,
+    id: "architecture",
+  },
+  { name: "Technology", href: "/#technologies", icon: Cpu, id: "technologies" },
+  { name: "Results", href: "/#results", icon: BarChart, id: "results" },
+  { name: "Team", href: "/#team", icon: Users, id: "team" },
 ];
 
 // Animation variants
@@ -80,43 +86,172 @@ const mobileItemVariants: Variants = {
   }),
 };
 
+const navItemVariants: Variants = {
+  hover: {
+    y: -2,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 15,
+    },
+  },
+  tap: {
+    scale: 0.95,
+  },
+};
+
+const themeChangerVariants: Variants = {
+  hover: {
+    scale: 1.2,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 15,
+    },
+  },
+  tap: {
+    scale: 0.95,
+  },
+};
+
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("");
   const pathname = usePathname();
-  const prevPathnameRef = useRef(pathname);
+  const router = useRouter();
 
-  // Handle scroll effect
+  // Handle scroll effect for header background
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when route changes - using ref to compare previous pathname
+  // Scroll listener for active section
   useEffect(() => {
-    if (prevPathnameRef.current !== pathname && isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (pathname !== "/") return;
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 120;
+
+      // Check if we're at the top (hero section)
+      if (scrollPosition < 200) {
+        setActiveSection("");
+        return;
+      }
+
+      // Check each section
+      for (const item of navigation) {
+        const element = document.getElementById(item.id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top + window.scrollY;
+          const elementBottom = elementTop + rect.height;
+
+          if (
+            scrollPosition >= elementTop - 100 &&
+            scrollPosition < elementBottom - 100
+          ) {
+            setActiveSection(item.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [pathname]);
+
+  // Handle hash on mount and changes - FIXED: using requestAnimationFrame
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    const hash = window.location.hash.replace("#", "");
+    const rafId = requestAnimationFrame(() => {
+      setActiveSection(hash || "");
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [pathname]);
+
+  // Close mobile menu when route changes - FIXED: using requestAnimationFrame
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
       setIsOpen(false);
-    }
-    prevPathnameRef.current = pathname;
-  }, [pathname, isOpen]);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [pathname]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    // Cleanup function
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  // Smooth scroll function
+  const handleSmoothScroll = useCallback(
+    (e: React.MouseEvent, href: string, closeMenu?: () => void) => {
+      e.preventDefault();
+
+      if (closeMenu) closeMenu();
+
+      const hash = href.split("#")[1];
+      if (!hash) return;
+
+      // Set active immediately
+      setActiveSection(hash);
+
+      const scrollToElement = () => {
+        const element = document.getElementById(hash);
+        if (element) {
+          const headerOffset = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition =
+            elementPosition + window.scrollY - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+        }
+      };
+
+      if (pathname !== "/") {
+        router.push(href);
+        setTimeout(scrollToElement, 100);
+      } else {
+        scrollToElement();
+      }
+    },
+    [pathname, router],
+  );
+
+  // Logo click handler
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      setActiveSection("");
+
+      if (pathname !== "/") {
+        router.push("/");
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 100);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [pathname, router],
+  );
 
   return (
     <>
@@ -133,66 +268,54 @@ export function Header() {
       >
         <nav className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo - Left side */}
+            {/* Logo */}
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex-shrink-0"
+              className="shrink-0"
             >
-              <Link href="/" className="shrink-0 block">
-                <motion.div
-                  whileHover="hover"
-                  initial="initial"
-                  className="text-2xl md:text-3xl font-bold inline-flex items-center"
-                >
-                  <motion.span
-                    className="bg-primary px-2 py-0.5 rounded-sm mx-2 text-background inline-block"
-                    variants={{
-                      initial: { rotate: 0 },
-                      hover: { rotate: -45 },
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    G
-                  </motion.span>
-                  <span className="bg-gradient-to-r text-primary bg-clip-text">
+              <Link
+                href="/"
+                onClick={handleLogoClick}
+                className="shrink-0 block cursor-pointer"
+              >
+                <motion.div className="text-2xl md:text-3xl font-bold inline-flex items-center">
+                  <AnimatedHandIcon />
+                  <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent pl-2">
                     SLSL
                   </span>
-                  <span className="text-gray-400">Translator</span>
+                  <span className="text-foreground/70 ml-1 text-xl md:text-2xl">
+                    Translator
+                  </span>
                 </motion.div>
               </Link>
             </motion.div>
 
-            {/* <BrandText /> */}
-
-            {/* Desktop Navigation - Center */}
-            <div className="hidden md:flex items-center justify-center flex-1 space-x-1">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center justify-end flex-1 space-x-1">
               {navigation.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                const isActive = pathname === "/" && activeSection === item.id;
 
                 return (
-                  <Link
+                  <a
                     key={item.name}
                     href={item.href}
-                    className="relative px-2 py-2"
+                    onClick={(e) => handleSmoothScroll(e, item.href)}
+                    className="relative px-2 py-2 cursor-pointer"
                   >
                     <motion.div
-                      whileHover={{ y: -2 }}
+                      variants={navItemVariants}
+                      whileHover="hover"
+                      whileTap="tap"
                       className={cn(
-                        "flex items-center text-sm font-medium transition-colors bg-primary/5 rounded-md px-3 py-1",
+                        "flex items-center text-sm font-medium transition-colors bg-primary/5 rounded-md px-3 py-1.5",
                         isActive
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-primary",
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                       )}
                     >
-                      <item.icon className="h-5 w-5 mr-2 flex-shrink-0" />
-                      <div className="flex flex-col items-start leading-tight">
-                        <span className="text-sm font-medium  w-full">
-                          {item.name}
-                        </span>
-                      </div>
+                      <item.icon className="h-4 w-4 mr-2 shrink-0" />
+                      <span className="text-sm font-medium">{item.name}</span>
                     </motion.div>
                     {isActive && (
                       <motion.div
@@ -203,56 +326,22 @@ export function Header() {
                         transition={{ duration: 0.3 }}
                       />
                     )}
-                  </Link>
+                  </a>
                 );
               })}
             </div>
 
-            {/* Desktop Right Section - Fixed width */}
-            <div className="hidden md:flex items-center justify-end space-x-3 min-w-[180px]">
+            {/* Desktop Right Section */}
+            <motion.div
+              variants={themeChangerVariants}
+              whileHover="hover"
+              whileTap="tap"
+              className={cn(
+                "hidden md:flex items-center justify-end space-x-3 md:ml-4",
+              )}
+            >
               <ThemeSwitcher />
-
-              <Link href="/auth/login">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="text-muted-foreground hover:text-primary whitespace-nowrap cursor-pointer"
-                  >
-                    Login
-                  </Button>
-                </motion.div>
-              </Link>
-
-              <Link href="/company/post-job">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative"
-                >
-                  <Button
-                    size="lg"
-                    className="bg-primary text-background hover:opacity-90 whitespace-nowrap cursor-pointer px-4"
-                  >
-                    Post a Job
-                  </Button>
-                  <motion.div
-                    className="absolute -inset-1 bg-primary rounded-lg opacity-30 blur -z-10"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                    }}
-                  />
-                </motion.div>
-              </Link>
-            </div>
+            </motion.div>
 
             {/* Mobile Menu Button */}
             <div className="flex items-center space-x-2 md:hidden">
@@ -274,7 +363,7 @@ export function Header() {
         </nav>
       </motion.header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -295,12 +384,10 @@ export function Header() {
               className="fixed top-16 right-0 bottom-0 w-full max-w-sm bg-background border-l shadow-xl z-40 md:hidden overflow-y-auto"
             >
               <div className="p-6 space-y-6 flex-col h-full flex justify-between">
-                {/* Navigation Links */}
                 <div className="space-y-2">
                   {navigation.map((item, index) => {
                     const isActive =
-                      pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`);
+                      pathname === "/" && activeSection === item.id;
 
                     return (
                       <motion.div
@@ -310,67 +397,67 @@ export function Header() {
                         initial="hidden"
                         animate="visible"
                       >
-                        <Link
+                        <motion.a
                           href={item.href}
-                          onClick={() => setIsOpen(false)}
+                          onClick={(e) =>
+                            handleSmoothScroll(e, item.href, () =>
+                              setIsOpen(false),
+                            )
+                          }
+                          whileHover={{ x: 5 }}
+                          whileTap={{ scale: 0.98 }}
                           className={cn(
-                            "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
+                            "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer",
                             isActive
                               ? "bg-primary/10 text-primary"
                               : "text-muted-foreground bg-primary/5 hover:bg-muted",
                           )}
                         >
-                          <item.icon className="h-5 w-5" />
-                          <span className="font-medium">
-                            <span className="text-[14px] opacity-100 font-bold">
-                              ගොඩයන
-                            </span>{" "}
-                            &nbsp;
-                            {item.name}
-                          </span>
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          <span className="font-medium">{item.name}</span>
                           {isActive && (
                             <motion.div
                               layoutId="mobile-active"
                               className="ml-auto w-1.5 h-1.5 bg-primary rounded-full"
                             />
                           )}
-                        </Link>
+                        </motion.a>
                       </motion.div>
                     );
                   })}
                 </div>
                 <div>
-                  {/* Divider */}
                   <div className="border-t border-border pb-8" />
-
-                  {/* Mobile Auth Buttons */}
-                  <div className="gap-4 pb-4 flex flex-col">
-                    <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-                      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-                        <Button variant="outline" className="w-full">
-                          Login
-                        </Button>
-                      </motion.div>
-                    </Link>
-
-                    <Link
-                      href="/company/post-job"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-                        <Button className="w-full bg-primary text-background">
-                          Post a Job
-                        </Button>
-                      </motion.div>
-                    </Link>
-                  </div>
-
-                  {/* Quick Info */}
-                  <div className="pt-4 text-sm text-muted-foreground">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="pt-4 text-sm text-muted-foreground"
+                  >
                     <p className="text-center">
-                      Sri Lanka&apos;s leading platform for global opportunities
+                      Real-time SLSL to Sinhala translation for healthcare
                     </p>
-                  </div>
+                    <div className="flex justify-center mt-4 gap-2">
+                      <motion.span
+                        whileHover={{ scale: 1.1 }}
+                        className="text-xs px-2 py-1 bg-primary/10 rounded-full text-primary"
+                      >
+                        468 features
+                      </motion.span>
+                      <motion.span
+                        whileHover={{ scale: 1.1 }}
+                        className="text-xs px-2 py-1 bg-primary/10 rounded-full text-primary"
+                      >
+                        &lt;120ms
+                      </motion.span>
+                      <motion.span
+                        whileHover={{ scale: 1.1 }}
+                        className="text-xs px-2 py-1 bg-primary/10 rounded-full text-primary"
+                      >
+                        8.2 MB
+                      </motion.span>
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
@@ -378,7 +465,7 @@ export function Header() {
         )}
       </AnimatePresence>
 
-      {/* Spacer to prevent content from hiding under fixed header */}
+      {/* Spacer */}
       <div className="h-16 md:h-20" />
     </>
   );

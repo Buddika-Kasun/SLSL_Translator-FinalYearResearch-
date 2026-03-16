@@ -1,24 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  Briefcase,
-  MapPin,
-  Globe,
+  Hand,
+  Languages,
+  Smartphone,
   CheckCircle,
-  TrendingUp,
-  PlaneTakeoff,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import type { Variants } from "framer-motion";
 
@@ -74,9 +65,23 @@ const floatingVariants2: Variants = {
   },
 };
 
+const pulseVariants: Variants = {
+  initial: { scale: 1, opacity: 0.5 },
+  animate: {
+    scale: [1, 1.2, 1],
+    opacity: [0.5, 0.8, 0.5],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+      ease: "easeInOut",
+    },
+  },
+};
+
 export function Hero() {
   return (
-    <section className="relative pt-0 md:pt-0 min-h-[calc(100vh-60px)] md:h-[calc(100vh-80px)] overflow-y-hidden overflow-x-hidden w-full">
+    <section className="relative pb-8 pt-4 md:pt-2 overflow-y-hidden overflow-x-hidden w-full">
       {/* Background decorative elements with animation */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -94,7 +99,7 @@ export function Hero() {
             repeat: Infinity,
             repeatType: "reverse",
           }}
-          className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl hidden md:block"
+          className="absolute top-20 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl hidden md:block"
         />
         <motion.div
           animate={{
@@ -106,11 +111,11 @@ export function Hero() {
             repeat: Infinity,
             repeatType: "reverse",
           }}
-          className="absolute bottom-20 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl hidden md:block"
+          className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl hidden md:block"
         />
         {/* Mobile background blurs - smaller */}
-        <div className="absolute top-10 left-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl md:hidden" />
-        <div className="absolute bottom-10 right-0 w-40 h-40 bg-secondary/5 rounded-full blur-3xl md:hidden" />
+        <div className="absolute top-10 left-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl md:hidden" />
+        <div className="absolute bottom-10 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl md:hidden" />
       </motion.div>
 
       <div className="w-full px-4 sm:px-6 md:px-8 lg:px-8 max-w-[100vw] overflow-x-hidden overflow-y-hidden">
@@ -121,48 +126,42 @@ export function Hero() {
           className="grid lg:grid-cols-2 gap-8 md:gap-12"
         >
           {/* Left Column - Content */}
-          <div className="space-y-4 md:space-y-6 px-2 sm:px-0 flex-col items-center md:items-start text-center md:text-left">
-            {/* NEW Badge */}
-            <motion.div variants={itemVariants}>
-              <Badge
-                variant="secondary"
-                className="bg-blue-100 dark:bg-blue-950 text-primary border border-blue-200 dark:border-blue-900 px-3 sm:px-4 py-1.5 sm:py-2 mt-3 sm:mt-4 text-[8px] sm:text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
-              >
-                <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-1 shrink-0"></span>
-                <span className="truncate">
-                  NEW: OVERSEAS OPPORTUNITIES IN 15+ COUNTRIES
-                </span>
-              </Badge>
-            </motion.div>
+          <div className="space-y-4 md:space-y-6 px-2 sm:px-0 flex-col items-center md:items-start text-center md:text-left pt-4">
+
+            {/* English Subheading */}
+            <motion.h2
+              variants={itemVariants}
+              className="text-lg sm:text-xl md:text-2xl text-primary max-w-lg px-4 sm:px-0 text-center md:text-left font-medium"
+            >
+              Real-Time Sri Lankan Sign Language to Sinhala Text Translation
+            </motion.h2>
 
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
-              className="text-6xl sm:text-5xl md:text-6xl lg:text-[80px] text-center md:text-left font-bold font-sinhala md:pl-8 pb-6 mb-0 md:mb-8 md:pb-12 mt-6 sm:mt-6"
-              style={{ lineHeight: "0.85", letterSpacing: "0.04em" }}
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl text-center md:text-left font-bold font-sinhala pb-4 md:pb-6 mt-4 sm:mt-6 pl-4"
+              style={{ lineHeight: "1.1", letterSpacing: "0.02em" }}
             >
               <motion.span
                 animate={{
-                  y: [0, -10, 0],
-                  scale: [1, 1.05, 1],
+                  y: [0, -8, 0],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
                   repeatType: "reverse",
                   ease: "easeInOut",
-                  delay: 0,
                 }}
-                className="inline-block"
+                className="inline-block text-foreground"
               >
-                ජීවිතේම
+                සන්නිවේදන
               </motion.span>{" "}
               <br />
               <span className="text-primary relative whitespace-nowrap">
                 <motion.span
                   animate={{
-                    y: [0, -12, 0],
-                    scale: [1, 1.08, 1],
+                    y: [0, -10, 0],
+                    scale: [1, 1.05, 1],
                   }}
                   transition={{
                     duration: 2.2,
@@ -173,29 +172,95 @@ export function Hero() {
                   }}
                   className="inline-block"
                 >
-                  ගොඩයන්න
-                </motion.span>
-                <motion.svg
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
-                  className="absolute -bottom-6 sm:-bottom-8 md:-bottom-10 left-0 w-full h-6 sm:h-8 md:h-10 text-primary/20"
-                  viewBox="0 0 100 10"
-                  preserveAspectRatio="none"
+                  බාධක
+                </motion.span>{" "}
+                <motion.span
+                  animate={{
+                    y: [0, -8, 0],
+                  }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut",
+                    delay: 0.4,
+                  }}
+                  className="inline-block"
                 >
-                  <path
-                    d="M0,5 Q25,10 50,5 T100,5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    fill="none"
-                  />
-                </motion.svg>
+                  නැති
+                </motion.span>{" "}
+                <br />
               </span>
-              <br />
+              <span className="text-forground relative whitespace-nowrap">
+                <motion.span
+                  animate={{
+                    y: [0, -12, 0],
+                    scale: [1, 1.08, 1],
+                  }}
+                  transition={{
+                    duration: 2.6,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut",
+                    delay: 0.6,
+                  }}
+                  className="inline-block"
+                >
+                  ලෝකයක්
+                </motion.span>
+              </span>
+              <motion.span
+                animate={{
+                  y: [0, -6, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                  delay: 0.8,
+                }}
+                className="inline-block text-primary ml-2"
+              >
+                .
+              </motion.span>
+              {/* Decorative underline */}
+              <motion.svg
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
+                className="absolute -bottom-4 left-0 w-full h-4 text-primary/20 hidden md:block"
+                viewBox="0 0 100 10"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,5 Q25,10 50,5 T100,5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+              </motion.svg>
             </motion.h1>
 
-            {/* Mobile Image - Shown only below lg breakpoint */}
-            <div className="lg:hidden w-full px-4">
+            {/* NEW Badge */}
+            <motion.div variants={itemVariants}>
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900 px-3 sm:px-4 py-1.5 sm:py-2 mt-2 sm:mt-2 text-[10px] sm:text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-600 rounded-full mr-1.5 shrink-0"
+                />
+                <span className="truncate">
+                  🚀 REAL-TIME SLSL TRANSLATION FOR HEALTHCARE
+                </span>
+              </Badge>
+            </motion.div>
+
+            {/* Mobile Visual - Shown only below lg breakpoint */}
+            <div className="lg:hidden w-full px-4 mt-6">
               <div className="relative aspect-square max-w-md mx-auto">
                 {/* Decorative circles */}
                 <motion.div
@@ -208,14 +273,14 @@ export function Hero() {
                     repeat: Infinity,
                     repeatType: "reverse",
                   }}
-                  className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-3xl"
+                  className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"
                 />
 
-                {/* Image placeholder with animation */}
+                {/* Visual placeholder with animation */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="absolute inset-10 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl border border-primary/20 flex items-center justify-center backdrop-blur-sm"
+                  className="absolute inset-10 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl border border-blue-500/20 flex items-center justify-center backdrop-blur-sm"
                 >
                   <motion.div
                     animate={{
@@ -228,11 +293,8 @@ export function Hero() {
                     }}
                     className="text-center"
                   >
-                    <Briefcase className="h-16 w-16 text-primary/40 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Hero Image</p>
-                    <p className="text-xs text-muted-foreground/60">
-                      Image
-                    </p>
+                    <Hand className="h-16 w-16 text-blue-500/40 mx-auto mb-4" />
+                    <Languages className="h-12 w-12 text-purple-500/40 mx-auto" />
                   </motion.div>
                 </motion.div>
 
@@ -247,15 +309,15 @@ export function Hero() {
                     whileHover={{ scale: 1.05 }}
                     className="flex items-center gap-2 rounded-lg px-2 py-1.5"
                   >
-                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <TrendingUp className="h-4 w-4 text-primary" />
+                    <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
+                      <Zap className="h-4 w-4 text-blue-500" />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[10px] text-muted-foreground">
-                        Active Vacancies
+                        Inference Time
                       </span>
                       <span className="text-lg font-bold text-center">
-                        2,450+
+                        &lt;120ms
                       </span>
                     </div>
                   </motion.div>
@@ -271,15 +333,15 @@ export function Hero() {
                     whileHover={{ scale: 1.05 }}
                     className="flex items-center gap-2 rounded-lg px-2 py-1.5"
                   >
-                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <PlaneTakeoff className="h-4 w-4 text-primary" />
+                    <div className="w-8 h-8 rounded-md bg-purple-500/10 flex items-center justify-center shrink-0">
+                      <Smartphone className="h-4 w-4 text-purple-500" />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[10px] text-muted-foreground">
-                        Overseas Jobs
+                        Model Size
                       </span>
                       <span className="text-lg font-bold text-center">
-                        840+
+                        8.2 MB
                       </span>
                     </div>
                   </motion.div>
@@ -290,115 +352,47 @@ export function Hero() {
             {/* Description */}
             <motion.p
               variants={itemVariants}
-              className="text-sm sm:text-base md:text-md text-muted-foreground max-w-lg px-4 sm:px-0 text-center md:text-left -mt-8 md:mt-0"
+              className="text-sm sm:text-base text-muted-foreground max-w-lg px-4 sm:px-0 text-center md:text md:text-left -mt-4 md:mt-2"
             >
-              The premier platform connecting Sri Lankan talent with top local
-              companies and global employers. Your career journey starts here.
+              A multimodal deep learning system that translates Sri Lankan Sign
+              Language gestures into Sinhala text in real-time. Breaking
+              communication barriers for the Deaf community in healthcare
+              settings.
             </motion.p>
 
-            {/* Stats */}
-            {/* <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap items-center gap-8 pt-6"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-3 cursor-default"
-              >
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"
-                >
-                  <Briefcase className="h-5 w-5 text-primary" />
-                </motion.div>
-                <div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                    className="text-2xl font-bold"
-                  >
-                    2,450+
-                  </motion.div>
-                  <div className="text-sm text-muted-foreground">
-                    Active Vacancies
-                  </div>
-                </div>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-3 cursor-default"
-              >
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center"
-                >
-                  <Globe className="h-5 w-5 text-secondary-foreground" />
-                </motion.div>
-                <div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
-                    className="text-2xl font-bold"
-                  >
-                    840+
-                  </motion.div>
-                  <div className="text-sm text-muted-foreground">
-                    Overseas Jobs
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div> */}
-
-            {/* Search Form */}
+            {/* CTA Buttons */}
             <motion.div
               variants={itemVariants}
-              className="md:pt-4 sm:pt-6 px-2 sm:px-0"
+              className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 sm:gap-4 pt-4 md:pt-6 px-2 sm:px-0"
             >
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="bg-card border rounded-lg p-2 sm:p-1 flex flex-col sm:flex-row gap-2 shadow-sm w-full"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full sm:w-auto"
               >
-                <div className="flex-1 w-full">
-                  <Input
-                    type="text"
-                    placeholder="Job title or keywords"
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full text-sm sm:text-base"
-                  />
-                </div>
-                <div className="w-full sm:w-48 cursor-pointer">
-                  <Select>
-                    <SelectTrigger className="w-full text-sm sm:text-base">
-                      <SelectValue placeholder="Select Location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="colombo">Colombo</SelectItem>
-                      <SelectItem value="kandy">Kandy</SelectItem>
-                      <SelectItem value="galle">Galle</SelectItem>
-                      <SelectItem value="overseas">Overseas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto"
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto text-sm sm:text-base cursor-pointer">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Try Demo
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full sm:w-auto"
+              >
+                <Button
+                  variant="outline"
+                  className="border-primary/20 hover:bg-primary/5 px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto text-sm sm:text-base cursor-pointer"
                 >
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 sm:px-8 w-full sm:w-auto cursor-pointer text-sm sm:text-base">
-                    Search Jobs
-                  </Button>
-                </motion.div>
+                  Learn More
+                </Button>
               </motion.div>
             </motion.div>
 
-            {/* Trust Indicators */}
+            {/* Key Features */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6 md:pt-2 pb-4 md:pb-2 text-xs sm:text-sm text-muted-foreground px-2 sm:px-0"
+              className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6 md:pt-4 pb-4 text-xs sm:text-sm text-muted-foreground px-2 sm:px-0"
             >
               <motion.div
                 whileHover={{ x: 5 }}
@@ -408,9 +402,9 @@ export function Hero() {
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 shrink-0" />
                 </motion.div>
-                <span className="whitespace-nowrap">Verified Companies</span>
+                <span className="whitespace-nowrap">Real-time</span>
               </motion.div>
               <motion.div
                 whileHover={{ x: 5 }}
@@ -418,11 +412,35 @@ export function Hero() {
               >
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
                 >
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 shrink-0" />
                 </motion.div>
-                <span className="whitespace-nowrap">Daily Updates</span>
+                <span className="whitespace-nowrap">Offline</span>
+              </motion.div>
+              <motion.div
+                whileHover={{ x: 5 }}
+                className="flex items-center gap-1 sm:gap-2 cursor-default"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+                >
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 shrink-0" />
+                </motion.div>
+                <span className="whitespace-nowrap">Medical Focus</span>
+              </motion.div>
+              <motion.div
+                whileHover={{ x: 5 }}
+                className="flex items-center gap-1 sm:gap-2 cursor-default"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.9 }}
+                >
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 shrink-0" />
+                </motion.div>
+                <span className="whitespace-nowrap">Multi-modal</span>
               </motion.div>
             </motion.div>
           </div>
@@ -432,46 +450,69 @@ export function Hero() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative hidden lg:block -mt-4"
+            className="relative hidden lg:block lg:mt-16"
           >
-            <div className="relative aspect-square max-w-lg mx-auto">
-              {/* Decorative circles */}
+            <div className="relative aspect-square max-w-md mx-auto">
+              {/* Animated background pulses */}
               <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                  rotate: [0, 5, -5, 0],
-                }}
-                transition={{
-                  duration: 10,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                }}
-                className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-3xl"
+                variants={pulseVariants}
+                initial="initial"
+                animate="animate"
+                className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"
               />
 
-              {/* Image placeholder with animation */}
+              {/* Main visual container */}
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="absolute inset-10 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl border border-primary/20 flex items-center justify-center backdrop-blur-sm"
+                className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-3xl border border-blue-500/20 flex items-center justify-center backdrop-blur-sm max-h-96 max-w-96 ml-8"
               >
                 <motion.div
                   animate={{
-                    y: [0, -10, 0],
+                    y: [0, -15, 0],
                   }}
                   transition={{
-                    duration: 5,
+                    duration: 6,
                     repeat: Infinity,
                     repeatType: "reverse",
                   }}
-                  className="text-center"
+                  className="text-center space-y-4"
                 >
-                  <Briefcase className="h-12 sm:h-16 w-12 sm:w-16 text-primary/40 mx-auto mb-2 sm:mb-4" />
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    Hero Image
-                  </p>
-                  <p className="text-xs text-muted-foreground/60">
-                    Image
+                  {/* Icon grid */}
+                  <div className="flex gap-6 justify-center">
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 8, repeat: Infinity }}
+                      className="p-4 bg-blue-500/10 rounded-2xl"
+                    >
+                      <Hand className="h-12 w-12 text-blue-500" />
+                    </motion.div>
+                    <motion.div
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 8, repeat: Infinity, delay: 1 }}
+                      className="p-4 bg-purple-500/10 rounded-2xl"
+                    >
+                      <Languages className="h-12 w-12 text-purple-500" />
+                    </motion.div>
+                  </div>
+                  <div className="flex gap-6 justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="p-4 bg-green-500/10 rounded-2xl"
+                    >
+                      <Smartphone className="h-12 w-12 text-green-500" />
+                    </motion.div>
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+                      className="p-4 bg-orange-500/10 rounded-2xl"
+                    >
+                      <Zap className="h-12 w-12 text-orange-500" />
+                    </motion.div>
+                  </div>
+                  <p className="text-muted-foreground font-medium">
+                    468 Landmarks • 90 Frames • 50 Classes
                   </p>
                 </motion.div>
               </motion.div>
@@ -481,25 +522,20 @@ export function Hero() {
                 variants={floatingVariants}
                 initial="initial"
                 animate="animate"
-                className="absolute -left-2 top-16 bg-card border rounded-lg shadow-lg"
+                className="absolute -left-20 top-16 bg-card border rounded-lg shadow-lg"
               >
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3"
                 >
-                  {/* Icon with muted background */}
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+                  <div className="w-12 h-12 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Zap className="h-6 w-6 text-blue-500" />
                   </div>
-
-                  {/* Content centered vertically */}
                   <div className="flex flex-col">
-                    <span className="text-[10px] sm:text-sm text-muted-foreground">
-                      Active Vacancies
+                    <span className="text-xs text-muted-foreground">
+                      Inference Time
                     </span>
-                    <span className="text-lg sm:text-2xl font-bold text-center">
-                      2,450+
-                    </span>
+                    <span className="text-2xl font-bold">&lt; 120ms</span>
                   </div>
                 </motion.div>
               </motion.div>
@@ -508,27 +544,32 @@ export function Hero() {
                 variants={floatingVariants2}
                 initial="initial"
                 animate="animate"
-                className="absolute -right-6 sm:-right-10 bottom-16 sm:bottom-20 bg-card border rounded-lg shadow-lg"
+                className="absolute -right-20 bottom-18 bg-card border rounded-lg shadow-lg"
               >
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3"
                 >
-                  {/* Icon with muted background */}
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <PlaneTakeoff className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+                  <div className="w-12 h-12 rounded-md bg-purple-500/10 flex items-center justify-center shrink-0">
+                    <Smartphone className="h-6 w-6 text-purple-500" />
                   </div>
-
-                  {/* Content centered vertically */}
                   <div className="flex flex-col">
-                    <span className="text-[10px] sm:text-sm text-muted-foreground">
-                      Overseas Jobs
+                    <span className="text-xs text-muted-foreground">
+                      Model Size
                     </span>
-                    <span className="text-lg sm:text-2xl font-bold text-center">
-                      840+
-                    </span>
+                    <span className="text-2xl font-bold">8.2 MB</span>
                   </div>
                 </motion.div>
+              </motion.div>
+
+              {/* Top floating badge */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.5 }}
+                className="absolute -top-4 -right-30 transform -translate-x-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium shadow-lg"
+              >
+                ⚡ Real-time • Offline • Medical
               </motion.div>
             </div>
           </motion.div>

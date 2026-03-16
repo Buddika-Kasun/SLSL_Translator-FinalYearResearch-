@@ -1,41 +1,63 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { Header } from "@/components/layout/Header"
-import { Footer } from "@/components/layout/Footer"
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Godayana.lk - Sri Lanka's Premier Platform for Global Opportunities",
-    template: "%s | Godayana.lk"
+    default:
+      "SLSL Translator - Real-Time Sri Lankan Sign Language to Sinhala Translation",
+    template: "%s | SLSL Translator",
   },
-  description: "Sri Lanka's leading platform for global migration, job opportunities, and professional growth. Empowering youth to reach their global potential.",
-  keywords: ["jobs in sri lanka", "overseas jobs", "migration", "visa services", "courses", "global opportunities"],
-  authors: [{ name: "Godayana.lk" }],
-  creator: "Godayana.lk",
-  publisher: "Godayana.lk",
+  description:
+    "A multimodal deep learning system that translates Sri Lankan Sign Language (SLSL) gestures into Sinhala text in real-time. Breaking communication barriers for the Deaf community in healthcare settings.",
+  keywords: [
+    "Sri Lankan Sign Language",
+    "SLSL",
+    "Sign Language Translation",
+    "Sinhala Translation",
+    "Deaf Community Sri Lanka",
+    "Healthcare Communication",
+    "Multimodal Deep Learning",
+    "Real-time Translation",
+    "MediaPipe Holistic",
+    "TFLite",
+    "Accessibility Technology",
+    "Assistive Technology",
+  ],
+  authors: [
+    { name: "G.S.R. Silva", url: "https://github.com/silva" },
+    { name: "D.L.B. Kasun (Buddika)", url: "https://github.com/buddikakasun" },
+    { name: "M.L.M. Fernando", url: "https://github.com/fernando" },
+  ],
+  creator: "Group 33 - University of Sri Jayewardenepura",
+  publisher:
+    "Department of ICT, Faculty of Technology, University of Sri Jayewardenepura",
   openGraph: {
-    title: "Godayana.lk - Global Opportunities for Sri Lankans",
-    description: "Find jobs, courses, visa services, and migration opportunities",
-    url: "https://godayana.lk",
-    siteName: "Godayana.lk",
+    title: "SLSL Translator - Real-Time SLSL to Sinhala Translation",
+    description:
+      "Breaking communication barriers for the Deaf community in Sri Lanka with AI-powered sign language translation",
+    url: "https://slsl-translator.vercel.app",
+    siteName: "SLSL Translator",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Godayana.lk",
+        alt: "SLSL Translator - Real-time Sign Language Translation",
       },
     ],
-    locale: "en_US",
+    locale: "si_LK",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Godayana.lk - Global Opportunities",
-    description: "Find jobs, courses, visa services, and migration opportunities",
+    title: "SLSL Translator - Real-time Sign Language Translation",
+    description:
+      "AI-powered translation of Sri Lankan Sign Language to Sinhala text",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -49,15 +71,22 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-}
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  category: "technology",
+  classification: "Assistive Technology",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="si" suppressHydrationWarning>
       <body
         className={`${inter.className} antialiased overflow-x-hidden w-full max-w-[100vw]`}
       >
