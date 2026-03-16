@@ -127,7 +127,7 @@ export function Team() {
       },
     },
     {
-      name: "D.L.B. Kasun (Buddika)",
+      name: "D.L.B. Kasun",
       //role: "Lead Developer",
       id: "ICT/21/870",
       email: "ict21870@fot.sjp.ac.lk",
