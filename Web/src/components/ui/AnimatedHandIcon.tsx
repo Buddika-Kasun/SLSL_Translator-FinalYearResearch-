@@ -95,7 +95,7 @@ export function AnimatedHandIcon() {
             rotate: rotate,
             y: [0, -2, 0, 2, 0],
           }}
-          exit={{ opacity: 0.2, scale: 0.5, rotate: 30 }}
+          exit={{ opacity: 0.3, scale: 0.7, rotate: 30 }}
           transition={{
             duration: 0.8,
             y: {

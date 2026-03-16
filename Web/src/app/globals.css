@@ -464,5 +464,6 @@
 .font-sinhala {
   /* font-family: 'Abhaya Libre', 'Noto Sans Sinhala', serif; */
   font-family: 'Maname', serif;
-  font-weight: 1000; /* Adjust as needed */
+  font-weight: 600; /* Adjust as needed */
+  text-shadow: 0.5px 0 0 currentColor;
 }
