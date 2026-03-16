@@ -102,3 +102,47 @@ web/index.dart.js.info
 # web/main.dart.js
 # web/main.dart.js.deps
 # web/main.dart.js.info
+
+# Dependencies
+node_modules/
+Web/node_module
+**/node_modules/
+*/target/
+**/target/
+*.jar
+
+# Environment
+.env
+Web/.env
+.env.local
+.env.*.local
+*.pem
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.springBeans
+
+# Logs
+logs/
+Web/log
+*.log
+npm-debug.log*
+
+# Build
+dist/
+Web/dist
+build/
+Web/build
+out/
+Web/out
+.next/
+Web/.next
+
+# OS
+.DS_Store
+Thumbs.db
