@@ -139,7 +139,7 @@ export function Hero() {
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl text-center md:text-left font-bold font-sinhala pb-4 md:pb-6 mt-4 sm:mt-6 pl-4"
+              className="text-5xl lg:text-6xl text-center md:text-left font-bold font-sinhala pb-4 md:pb-6 mt-4 sm:mt-6 pl-4"
               style={{ lineHeight: "1.1", letterSpacing: "0.02em" }}
             >
               <motion.span
