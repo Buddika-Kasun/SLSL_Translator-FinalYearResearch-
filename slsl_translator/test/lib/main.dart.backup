@@ -1,0 +1,684 @@
+import 'dart:async';
+import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'services/feature_extractor.dart'; // ← your exact 468 features
+import 'services/model_service.dart';
+
+late List<CameraDescription> _cameras;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  _cameras = await availableCameras();
+  runApp(const SLSLApp());
+}
+
+class SLSLApp extends StatelessWidget {
+  const SLSLApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SLSL → Sinhala',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(useMaterial3: true),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late CameraController _controller;
+  bool _isInitialized = false;
+  bool _isCapturing = false;
+  String _prediction = "Tap START to begin recording";
+  String _confidence = "";
+  final List<CameraImage> _frameBuffer = [];
+  int _requiredFrames = 280; // Target sequence length
+  Timer? _captureTimer;
+  int _elapsedSeconds = 0;
+  Timer? _countdownTimer;
+
+  final ModelService _modelService = ModelService();
+  late FeatureExtractor _extractor;
+
+  // History data
+  final List<Map<String, dynamic>> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _extractor = FeatureExtractor();
+    _initializeCamera();
+    _loadModel();
+  }
+
+  Future<void> _loadModel() async {
+    await _modelService.loadModel();
+    setState(() {
+      _requiredFrames = _modelService.sequenceLength;
+    });
+    print("✅ Model loaded - Sequence length: $_requiredFrames");
+  }
+
+  Future<void> _initializeCamera() async {
+    await Permission.camera.request();
+    _controller = CameraController(_cameras[0], ResolutionPreset.high,
+        enableAudio: false);
+    await _controller.initialize();
+    await _controller.startImageStream(_processCameraImage);
+    setState(() => _isInitialized = true);
+  }
+
+  void _processCameraImage(CameraImage image) {
+    if (_isCapturing) {
+      _frameBuffer.add(image);
+      // Max 560 frames (10 seconds at ~56 fps), will be sliced to 280
+      const int MAX_FRAMES = 560;
+      if (_frameBuffer.length >= MAX_FRAMES) {
+        _stopCapture();
+      }
+    }
+  }
+
+  void _startCapture() {
+    if (_isCapturing) return;
+
+    setState(() {
+      _isCapturing = true;
+      _prediction = "Recording... 0s";
+      _confidence = "";
+      _elapsedSeconds = 0;
+    });
+    _frameBuffer.clear();
+
+    // Update countdown every second
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _elapsedSeconds++;
+      if (_elapsedSeconds >= 10) {
+        _stopCapture();
+      } else {
+        setState(() {
+          _prediction = "Recording... ${_elapsedSeconds}s";
+        });
+      }
+    });
+
+    // Auto-stop after 10 seconds
+    _captureTimer = Timer(const Duration(seconds: 10), () {
+      _stopCapture();
+    });
+  }
+
+  void _stopCapture() {
+    if (!_isCapturing) return;
+
+    _captureTimer?.cancel();
+    _countdownTimer?.cancel();
+
+    if (_frameBuffer.isEmpty) {
+      setState(() {
+        _isCapturing = false;
+        _prediction = "❌ No frames captured";
+      });
+      return;
+    }
+
+    _processGesture();
+  }
+
+  Future<void> _processGesture() async {
+    setState(() {
+      _isCapturing = false;
+      _prediction = "Processing...";
+    });
+
+    try {
+      print("Processing ${-_frameBuffer.length} frames...");
+
+      // Extract 4 modalities exactly like your notebook
+      final features = await _extractor.extractFromFrames(_frameBuffer);
+      print("Features extracted successfully");
+
+      final result = await _modelService.runInference(
+        left: features.left,
+        right: features.right,
+        pose: features.pose,
+        lip: features.lip,
+      );
+
+      // Add to history
+      final historyItem = {
+        'timestamp': DateTime.now(),
+        'prediction': result.label,
+        'confidence': result.confidence,
+        'frames': _frameBuffer.length,
+      };
+      _history.insert(0, historyItem);
+
+      // Keep only last 50 items
+      if (_history.length > 50) {
+        _history.removeRange(50, _history.length);
+      }
+
+      setState(() {
+        _prediction = result.label;
+        _confidence = "${(result.confidence * 100).toStringAsFixed(1)}%";
+      });
+
+      print("✅ Prediction: ${result.label} (${result.confidence})");
+
+    } catch (e) {
+      print("❌ Error during gesture processing: $e");
+      setState(() => _prediction = "Error: ${e.toString().split(':').first}");
+    } finally {
+      _frameBuffer.clear();
+    }
+  }
+
+  void _showHistoryScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => HistoryScreen(history: _history),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Full screen camera preview
+          SizedBox.expand(
+            child: CameraPreview(_controller),
+          ),
+
+          // Overlay UI elements
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar
+                Container(
+                  color: Colors.black.withOpacity(0.7),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        onPressed: _showHistoryScreen,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "SLSL → Sinhala Sign Translator",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Balance the history button
+                    ],
+                  ),
+                ),
+
+                // Spacer to push content to bottom
+                const Spacer(),
+
+                // Bottom overlay with prediction and controls
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.black.withOpacity(0.7),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Prediction display
+                      if (_isCapturing)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                Icons.videocam,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _prediction,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                _prediction,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (_confidence.isNotEmpty)
+                                Text(
+                                  "Confidence: $_confidence",
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: 20),
+
+                      // Control buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (!_isCapturing) ...[
+                            ElevatedButton.icon(
+                              onPressed: _startCapture,
+                              icon: const Icon(Icons.play_arrow, size: 28),
+                              label: const Text(
+                                "START",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            ElevatedButton.icon(
+                              onPressed: _stopCapture,
+                              icon: const Icon(Icons.stop, size: 28),
+                              label: const Text(
+                                "STOP",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      Text(
+                        _isCapturing
+                            ? "Recording your sign... (max 10 seconds)"
+                            : "Tap START to begin recording your sign gesture",
+                        style: TextStyle(
+                          color: _isCapturing ? Colors.red[200] : Colors.white70,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _modelService.close();
+    _captureTimer?.cancel();
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+}
+
+class HistoryScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> history;
+
+  const HistoryScreen({super.key, required this.history});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Prediction History"),
+        backgroundColor: Colors.black87,
+      ),
+      body: history.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.history,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "No predictions yet",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Start recording signs to see your history",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              itemCount: history.length,
+              itemBuilder: (context, index) {
+                final item = history[index];
+                final timestamp = item['timestamp'] as DateTime;
+                final prediction = item['prediction'] as String;
+                final confidence = item['confidence'] as double;
+                final frames = item['frames'] as int;
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        prediction,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      prediction,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Confidence: ${(confidence * 100).toStringAsFixed(1)}%",
+                          style: TextStyle(
+                            color: confidence > 0.7 ? Colors.green : Colors.orange,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          "Frames: $frames | ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')} ${timestamp.day}/${timestamp.month}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        // Note: In a real app, you'd want to handle this properly
+                        // For now, just show a snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Delete not implemented")),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Full screen camera preview
+          SizedBox.expand(
+            child: CameraPreview(_controller),
+          ),
+
+          // Overlay UI elements
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar
+                Container(
+                  color: Colors.black.withOpacity(0.7),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        onPressed: () => _showHistoryScreen(),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "SLSL → Sinhala Sign Translator",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Balance the history button
+                    ],
+                  ),
+                ),
+
+                // Spacer to push content to bottom
+                const Spacer(),
+
+                // Bottom overlay with prediction and controls
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.black.withOpacity(0.7),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Prediction display
+                      if (_isCapturing)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                Icons.videocam,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _prediction,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                _prediction,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (_confidence.isNotEmpty)
+                                Text(
+                                  "Confidence: $_confidence",
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: 20),
+
+                      // Control buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (!_isCapturing) ...[
+                            ElevatedButton.icon(
+                              onPressed: _startCapture,
+                              icon: const Icon(Icons.play_arrow, size: 28),
+                              label: const Text(
+                                "START",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            ElevatedButton.icon(
+                              onPressed: _stopCapture,
+                              icon: const Icon(Icons.stop, size: 28),
+                              label: const Text(
+                                "STOP",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      Text(
+                        _isCapturing
+                            ? "Recording your sign... (max 10 seconds)"
+                            : "Tap START to begin recording your sign gesture",
+                        style: TextStyle(
+                          color: _isCapturing ? Colors.red[200] : Colors.white70,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

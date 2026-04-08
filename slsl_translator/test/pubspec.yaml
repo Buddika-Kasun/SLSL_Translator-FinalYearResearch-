@@ -1,0 +1,32 @@
+name: slsl_sign_to_text
+description: Sinhala Sign Language → Sinhala Text using your TFLite model
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.11.0+1
+
+  permission_handler: ^11.3.1
+  path_provider: ^2.0.15
+  provider: ^6.1.2
+  tflite_flutter: ^0.12.1
+
+  # Updated compatible versions
+  google_mlkit_pose_detection: ^0.14.1
+  google_mlkit_face_detection: ^0.13.2
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/models/model.tflite
+    - assets/labels.txt
